@@ -125,21 +125,6 @@ public class RRRArmCouple12 extends SubsystemBase implements RRRArm {
     }
 
     @Override
-    public double l1() {
-        return m_kinematics.l1;
-    }
-
-    @Override
-    public double l2() {
-        return m_kinematics.l2;
-    }
-
-    @Override
-    public double l3() {
-        return m_kinematics.l3;
-    }
-
-    @Override
     public void periodic() {
         m_q1.periodic();
         m_q2.periodic();
@@ -168,11 +153,6 @@ public class RRRArmCouple12 extends SubsystemBase implements RRRArm {
         m_q3.setUnwrappedPosition(q.q3(), qdot.q3dot(), f.t3());
     }
 
-    /**
-     * Choose the feasible config closest to the current config.
-     * 
-     * @param p tool center point pose
-     */
     @Override
     public RRRConfig config(Pose2d p) {
         RRRConfig q0 = getConfig();
@@ -204,7 +184,6 @@ public class RRRArmCouple12 extends SubsystemBase implements RRRArm {
         return m_kinematics.inverse(q, xdot, xddot);
     }
 
-    /** Current measured configuration. */
     @Override
     public RRRConfig getConfig() {
         // q2 kinematic angle is the difference between mechanism angles
@@ -214,30 +193,13 @@ public class RRRArmCouple12 extends SubsystemBase implements RRRArm {
                 m_q3.getUnwrappedPositionRad());
     }
 
-    /** Desired config, with limits applied. */
-    public RRRConfig getConfigWithinLimits() {
-        // q2 kinematic angle is the difference between mechanism angles
-        return new RRRConfig(
-                m_q1.getUnwrappedPositionWithinLimits(),
-                m_q2.getUnwrappedPositionWithinLimits() - m_q1.getUnwrappedPositionWithinLimits(),
-                m_q3.getUnwrappedPositionWithinLimits());
-    }
-
-    /** Current velocity. */
+    @Override
     public RRRVelocity getVelocity() {
         // q2 kinematic velocity is the difference between mechanism velocities
         return new RRRVelocity(
                 m_q1.getVelocityRad_S(),
                 m_q2.getVelocityRad_S() - m_q1.getVelocityRad_S(),
                 m_q3.getVelocityRad_S());
-    }
-
-    public Pose2d pose() {
-        return pose(getConfig());
-    }
-
-    public VelocitySE2 velocity() {
-        return velocity(getConfig(), getVelocity());
     }
 
     public Pose2d pose(RRRConfig q) {
@@ -257,7 +219,9 @@ public class RRRArmCouple12 extends SubsystemBase implements RRRArm {
 
     @Override
     public StateSE2 getState() {
-        return new StateSE2(pose(), velocity());
+        RRRConfig q = getConfig();
+        RRRVelocity qdot = getVelocity();
+        return new StateSE2(pose(q), velocity(q, qdot));
     }
 
     @Override

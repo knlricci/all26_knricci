@@ -36,11 +36,11 @@ public class RRRVisualizer {
         Mechanism2d view = new Mechanism2d(200, 150);
         MechanismRoot2d root = view.getRoot("root", 100, 25);
         m_l1 = new MechanismLigament2d(
-                "l1", SCALE * m_arm.l1(), 90, WIDTH, COLOR);
+                "l1", SCALE * m_arm.kinematics().l1, 90, WIDTH, COLOR);
         m_l2 = new MechanismLigament2d(
-                "l2", SCALE * m_arm.l2(), 0, WIDTH, COLOR);
+                "l2", SCALE * m_arm.kinematics().l2, 0, WIDTH, COLOR);
         m_l3 = new MechanismLigament2d(
-                "l3", SCALE * m_arm.l3(), 0, WIDTH, COLOR);
+                "l3", SCALE * m_arm.kinematics().l3, 0, WIDTH, COLOR);
         root.append(m_l1);
         m_l1.append(m_l2);
         m_l2.append(m_l3);

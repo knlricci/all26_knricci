@@ -6,6 +6,8 @@ import java.util.List;
 import org.team100.lib.geometry.rrr.RRRConfig;
 import org.team100.lib.geometry.rrr.RRRPose;
 
+import edu.wpi.first.math.MathUtil;
+
 /** Selects feasible configurations. */
 public class RRRFeasibility {
     private static final boolean DEBUG = false;
@@ -18,6 +20,14 @@ public class RRRFeasibility {
         m_k = k;
         m_qMin = qMin;
         m_qMax = qMax;
+    }
+
+    /** Clamp each joint within its min and max. Ignores x limits. */
+    public RRRConfig clamp(RRRConfig q) {
+        return new RRRConfig(
+                MathUtil.clamp(q.q1(), m_qMin.q1(), m_qMax.q1()),
+                MathUtil.clamp(q.q2(), m_qMin.q2(), m_qMax.q2()),
+                MathUtil.clamp(q.q3(), m_qMin.q3(), m_qMax.q3()));
     }
 
     /**

@@ -5,12 +5,10 @@ import java.util.List;
 import org.team100.lib.commands.MoveAndHold;
 import org.team100.lib.dynamics.six_dof.SixDofDynamicsNewtonEuler;
 import org.team100.lib.dynamics.six_dof.SixDofEffort;
-import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.se3.VelocitySE3;
 import org.team100.lib.geometry.six_dof.SixDofAcceleration;
 import org.team100.lib.geometry.six_dof.SixDofConfig;
 import org.team100.lib.geometry.six_dof.SixDofPose;
-import org.team100.lib.geometry.six_dof.SixDofState;
 import org.team100.lib.geometry.six_dof.SixDofVelocity;
 import org.team100.lib.kinematics.six_dof.SixDofFeasibility;
 import org.team100.lib.kinematics.six_dof.SixDofKinematics;
@@ -36,8 +34,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Six-DOF arm, for training.
  */
 public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> {
-    private static final double DT = TimedRobot100.LOOP_PERIOD_S;
-
     private final LoggerFactory m_log;
 
     final SixDofKinematics m_kinematics;
@@ -49,9 +45,6 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
     private final RotaryMechanism m_q4;
     private final RotaryMechanism m_q5;
     private final RotaryMechanism m_q6;
-
-    private SixDofConfig m_q;
-    private SixDofVelocity m_qdot = new SixDofVelocity(0, 0, 0, 0, 0, 0);
 
     public SixDofArm(LoggerFactory parent) {
         m_log = parent.type(this);
@@ -94,8 +87,6 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
                 q5, m5, m5.encoder(), 0, 1, qMin.q5(), qMax.q5());
         m_q6 = new RotaryMechanism(
                 q6, m6, m6.encoder(), 0, 1, qMin.q6(), qMax.q6());
-
-        m_q = getConfig();
     }
 
     @Override
@@ -127,31 +118,13 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
         set(q, qdot, f);
     }
 
-    /** Desired config, with limits applied. */
-    public SixDofConfig getConfigWithinLimits() {
-        return new SixDofConfig(
-                m_q1.getUnwrappedPositionWithinLimits(),
-                m_q2.getUnwrappedPositionWithinLimits(),
-                m_q3.getUnwrappedPositionWithinLimits(),
-                m_q4.getUnwrappedPositionWithinLimits(),
-                m_q5.getUnwrappedPositionWithinLimits(),
-                m_q6.getUnwrappedPositionWithinLimits());
-    }
-
-    public SixDofState set(SixDofConfig q, SixDofVelocity qdot, SixDofEffort f) {
+    private void set(SixDofConfig q, SixDofVelocity qdot, SixDofEffort f) {
         m_q1.setUnwrappedPosition(q.q1(), qdot.q1dot(), f.t1());
         m_q2.setUnwrappedPosition(q.q2(), qdot.q2dot(), f.t2());
         m_q3.setUnwrappedPosition(q.q3(), qdot.q3dot(), f.t3());
         m_q4.setUnwrappedPosition(q.q4(), qdot.q4dot(), f.t4());
         m_q5.setUnwrappedPosition(q.q5(), qdot.q5dot(), f.t5());
         m_q6.setUnwrappedPosition(q.q6(), qdot.q6dot(), f.t6());
-
-        q = getConfigWithinLimits();
-        SixDofAcceleration qddot = SixDofAcceleration.solve(m_q, q, m_qdot, DT);
-        qdot = SixDofVelocity.evolve(m_qdot, qddot, DT);
-        m_q = q;
-        m_qdot = qdot;
-        return new SixDofState(q, qdot);
     }
 
     public SixDofVelocity qdot(SixDofConfig q, VelocitySE3 xdot) {

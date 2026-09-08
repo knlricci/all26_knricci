@@ -6,12 +6,10 @@ import org.team100.lib.commands.MoveAndHold;
 import org.team100.lib.dynamics.rr.RRDynamics;
 import org.team100.lib.dynamics.rr.RRDynamicsAnalytic;
 import org.team100.lib.dynamics.rr.RREffort;
-import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.r2.AccelerationR2;
 import org.team100.lib.geometry.r2.VelocityR2;
 import org.team100.lib.geometry.rr.RRAcceleration;
 import org.team100.lib.geometry.rr.RRConfig;
-import org.team100.lib.geometry.rr.RRState;
 import org.team100.lib.geometry.rr.RRVelocity;
 import org.team100.lib.kinematics.rr.RRFeasibility;
 import org.team100.lib.kinematics.rr.RRKinematics;
@@ -41,15 +39,12 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  */
 public class RRArm extends SubsystemBase
         implements PositionSubsystemR2, PositionSubsystemRn<N2> {
-    private static final double DT = TimedRobot100.LOOP_PERIOD_S;
     private final LoggerFactory m_log;
     final RRKinematics m_kinematics;
     final RRDynamics m_dynamics;
     final RRFeasibility m_feasibility;
     private final RotaryMechanism m_q1;
     private final RotaryMechanism m_q2;
-    private RRConfig m_q;
-    private RRVelocity m_qdot = new RRVelocity(0, 0);
 
     public RRArm(LoggerFactory parent) {
         m_log = parent.type(this);
@@ -67,7 +62,6 @@ public class RRArm extends SubsystemBase
                 q1, m1, m1.encoder(), 0, 1, qMin.q1(), qMax.q1());
         m_q2 = new RotaryMechanism(
                 q2, m2, m2.encoder(), 0, 1, qMin.q2(), qMax.q2());
-        m_q = getConfig();
     }
 
     @Override
@@ -76,28 +70,14 @@ public class RRArm extends SubsystemBase
         m_q2.periodic();
     }
 
-    public RRState set(RRConfig q, RRVelocity qdot, RRAcceleration qddot) {
+    public void set(RRConfig q, RRVelocity qdot, RRAcceleration qddot) {
         RREffort f = m_dynamics.effort(q, qdot, qddot);
-        return set(q, qdot, f);
+        set(q, qdot, f);
     }
 
-    public RRState set(RRConfig q, RRVelocity qdot, RREffort f) {
+    public void set(RRConfig q, RRVelocity qdot, RREffort f) {
         m_q1.setUnwrappedPosition(q.q1(), qdot.q1dot(), f.t1());
         m_q2.setUnwrappedPosition(q.q2(), qdot.q2dot(), f.t2());
-
-        q = getConfigWithinLimits();
-        RRAcceleration qddot = RRAcceleration.solve(m_q, q, m_qdot, DT);
-        qdot = RRVelocity.evolve(m_qdot, qddot, DT);
-        m_q = q;
-        m_qdot = qdot;
-        return new RRState(q, qdot);
-    }
-
-    /** Desired config, with limits applied. */
-    public RRConfig getConfigWithinLimits() {
-        return new RRConfig(
-                m_q1.getUnwrappedPositionWithinLimits(),
-                m_q2.getUnwrappedPositionWithinLimits());
     }
 
     /**

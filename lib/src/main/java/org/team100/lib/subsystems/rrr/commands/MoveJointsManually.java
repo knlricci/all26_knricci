@@ -41,19 +41,21 @@ public class MoveJointsManually extends Command {
         double q1dot = -15.0 * v.theta(); // axis 0
         double q2dot = -5.0 * v.y(); // axis 4
         double q3dot = -5.0 * v.x(); // axis 5
-        // Velocity in rad/s
+        // Desired velocity in rad/s.
         RRRVelocity qdot = new RRRVelocity(q1dot, q2dot, q3dot);
-        // Accel in rad/s/s.
+        // Desired accel in rad/s/s.
         RRRAcceleration qddot = qdot.accel(m_qdot, DT);
+        // Desired position in rad.
         RRRConfig q = m_q.evolve(m_qdot, qddot, DT);
-
-        m_arm.set(q, m_qdot, qddot);
-        // TODO: apply limits prior to actuation, remove this method
-        q = m_arm.getConfigWithinLimits();
+        // Actual position within limits
+        q = m_arm.feasibility().clamp(q);
+        // Implied accel for feasible position and previous velocity
         qddot = RRRAcceleration.solve(m_q, q, m_qdot, DT);
+        // Implied velocity for feasible position, accel, and previous velocity
         qdot = RRRVelocity.evolve(m_qdot, qddot, DT);
         m_q = q;
         m_qdot = qdot;
+        m_arm.set(m_q, m_qdot, qddot);
     }
 
 }
