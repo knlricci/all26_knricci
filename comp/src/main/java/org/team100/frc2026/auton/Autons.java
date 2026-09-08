@@ -20,10 +20,10 @@ import edu.wpi.first.wpilibj2.command.Command;
  * In 2026, the field is rotationally symmetric, so there's no need to fill out
  * the "Alliance" part of the annotated command.
  */
-public class AllAutons {
+public class Autons {
     private final AutonChooser m_autonChooser;
 
-    public AllAutons(Machinery machinery) {
+    public Autons(Machinery machinery) {
         ControllerSE2 controller = machinery.m_holonomicController;
         m_autonChooser = new AutonChooser();
         LoggerFactory log = Logging.instance().rootLogger.name("Auton");

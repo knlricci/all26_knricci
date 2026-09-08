@@ -2,12 +2,10 @@ package org.team100.lib.state;
 
 import org.team100.lib.geometry.se2.AccelerationSE2;
 import org.team100.lib.geometry.se2.VelocitySE2;
-import org.team100.lib.hid.Velocity;
+import org.team100.lib.hid.DriverVelocity;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N3;
 
 /**
@@ -74,17 +72,6 @@ public class VelocityControlSE2 {
                 m_theta.plus(other.theta()));
     }
 
-    /**
-     * Integrate from the initial pose for time dt.
-     */
-    public Pose2d integrate(Pose2d initial, double dt) {
-        return new Pose2d(
-                initial.getX() + m_x.v() * dt + m_x.a() * dt * dt / 2,
-                initial.getY() + m_y.v() * dt + m_y.a() * dt * dt / 2,
-                initial.getRotation().plus(new Rotation2d(
-                        m_theta.v() * dt + m_theta.a() * dt * dt / 2)));
-    }
-
     /** Velocity only. */
     public static VelocityControlSE2 fromVector(Vector<N3> v) {
         return new VelocityControlSE2(v.get(0), v.get(1), v.get(2));
@@ -101,7 +88,7 @@ public class VelocityControlSE2 {
      * @param maxRot   radians per second
      * @return meters and rad per second as specified by speed limits
      */
-    public static VelocityControlSE2 scale(Velocity v, double maxSpeed, double maxRot) {
+    public static VelocityControlSE2 scale(DriverVelocity v, double maxSpeed, double maxRot) {
         return new VelocityControlSE2(
                 maxSpeed * MathUtil.clamp(v.x(), -1, 1),
                 maxSpeed * MathUtil.clamp(v.y(), -1, 1),

@@ -2,34 +2,35 @@ package frc.robot;
 
 import org.team100.lib.coherence.Cache;
 import org.team100.lib.coherence.Takt;
-import org.team100.lib.config.Identity;
+import org.team100.lib.experiments.Experiment;
 import org.team100.lib.experiments.Experiments;
-import org.team100.lib.util.Banner;
+import org.team100.lib.framework.TimedRobot100;
+import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.logging.Logging;
+import org.team100.lib.logging.RobotLog;
+import org.team100.lib.util.Startup;
+import org.team100.rrr.auton.Autons;
+import org.team100.rrr.robot.Binder;
+import org.team100.rrr.robot.Machinery;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.WPILibVersion;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot100 {
+    private final RobotLog m_robotLog;
+
     private final Machinery m_machinery;
     private final Binder m_binder;
     private final Autons m_autons;
 
+    /** Mirrors the comp robot code. */
     public Robot() {
-        Banner.printBanner();
-        enableLiveWindowInTest(false);
-        System.out.printf("WPILib Version: %s\n", WPILibVersion.Version);
-        System.out.printf("RoboRIO serial number: %s\n", RobotController.getSerialNumber());
-        System.out.printf("Identity: %s\n", Identity.instance.name());
-        DriverStation.silenceJoystickConnectionWarning(true);
-        Experiments.instance.show();
-        SmartDashboard.putData(CommandScheduler.getInstance());
-        CommandScheduler.getInstance().setPeriod(100);
-        m_machinery = new Machinery();
-        m_binder = new Binder(m_machinery);
+        Startup.start();
+        LoggerFactory rootLogger = Logging.instance().rootLogger;
+        m_robotLog = new RobotLog(rootLogger);
+
+        m_machinery = new Machinery(m_robotLog.totalCurrentLog());
+        m_binder = new Binder(rootLogger, m_machinery);
         m_autons = new Autons(m_machinery);
     }
 
@@ -39,6 +40,11 @@ public class Robot extends TimedRobot {
         Cache.refresh();
         CommandScheduler.getInstance().run();
         m_machinery.periodic();
+        m_robotLog.periodic();
+        if (Experiments.instance.enabled(Experiment.FlushOften)) {
+            NetworkTableInstance.getDefault().flush();
+        }
+
     }
 
     @Override
@@ -73,4 +79,11 @@ public class Robot extends TimedRobot {
     public void teleopExit() {
     }
 
+    @Override
+    public void disabledPeriodic() {
+    }
+
+    @Override
+    public void simulationPeriodic() {
+    }
 }

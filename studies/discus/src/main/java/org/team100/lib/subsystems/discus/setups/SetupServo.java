@@ -9,16 +9,16 @@ import org.team100.lib.visualization.ArmVisualization;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+/** Adds profiled motion. */
 public class SetupServo implements Runnable {
     private static final double OFFSET = Math.PI / 2;
     private static final double SCALE = 3;
     private final DiscusServo m_discus;
     private final ArmVisualization m_viz;
 
-    public SetupServo() {
+    public SetupServo(TotalCurrentLog currentLog) {
         final Logging logging = Logging.instance();
         final LoggerFactory logger = logging.rootLogger;
-        TotalCurrentLog currentLog = new TotalCurrentLog(logger);
         XboxController controller = new XboxController(0);
 
         m_discus = new DiscusServo(logger, currentLog);

@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Copy of {@link edu.wpi.first.wpilibj.IterativeRobotBase} in an effort to
- * reduce log spam.
+ * reduce log spam.  Also disables livewindow.
  */
 public abstract class IterativeRobotBase100 extends RobotBase {
     private enum Mode {
@@ -41,6 +41,8 @@ public abstract class IterativeRobotBase100 extends RobotBase {
      * @param period Period in seconds.
      */
     protected IterativeRobotBase100(double period) {
+        // We never use LiveWindow.
+        enableLiveWindowInTest(false);
         m_period = period;
         // m_watchdog = new Watchdog(period, this::printLoopOverrunMessage);
     }

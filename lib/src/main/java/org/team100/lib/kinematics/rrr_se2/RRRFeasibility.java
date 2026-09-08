@@ -11,8 +11,8 @@ public class RRRFeasibility {
     private static final boolean DEBUG = false;
 
     private final RRRKinematicsPoE m_k;
-    private final RRRConfig m_qMin;
-    private final RRRConfig m_qMax;
+    final RRRConfig m_qMin;
+    final RRRConfig m_qMax;
 
     public RRRFeasibility(RRRKinematicsPoE k, RRRConfig qMin, RRRConfig qMax) {
         m_k = k;
@@ -20,6 +20,9 @@ public class RRRFeasibility {
         m_qMax = qMax;
     }
 
+    /**
+     * Return configs that are within the joint and workspace limits.
+     */
     public List<RRRConfig> filter(List<RRRConfig> ql) {
         List<RRRConfig> result = new ArrayList<>();
         for (RRRConfig q : ql) {

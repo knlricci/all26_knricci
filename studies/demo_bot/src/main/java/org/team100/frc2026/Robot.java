@@ -30,6 +30,7 @@ import org.team100.lib.subsystems.tank.commands.TankManual;
 import org.team100.lib.util.Banner;
 import org.team100.lib.util.CanId;
 import org.team100.lib.util.RoboRioChannel;
+import org.team100.lib.util.Startup;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -80,17 +81,12 @@ public class Robot extends TimedRobot100 {
     private final PivotSubsystem m_pivot;
 
     public Robot() {
-        Banner.printBanner();
-        DriverStation.silenceJoystickConnectionWarning(true);
-        Experiments.instance.show();
-        SmartDashboard.putData(CommandScheduler.getInstance());
-
-        m_robotLog = new RobotLog();
-        TotalCurrentLog m_currentLog = m_robotLog.totalCurrentLog();
-
+        Startup.start();
         Logging logging = Logging.instance();
-        LoggerFactory fieldLogger = logging.fieldLogger;
         LoggerFactory logger = logging.rootLogger;
+        LoggerFactory fieldLogger = logging.fieldLogger;
+        m_robotLog = new RobotLog(logger);
+        TotalCurrentLog m_currentLog = m_robotLog.totalCurrentLog();
 
         DriverXboxControl xbox = new DriverXboxControl(logger, 0);
 

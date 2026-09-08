@@ -9,14 +9,14 @@ import org.team100.lib.visualization.ArmVisualization;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+/** Low-level control: voltage, current. */
 public class SetupBare implements Runnable {
     private final DiscusBare m_discus;
     private final ArmVisualization m_viz;
 
-    public SetupBare() {
+    public SetupBare(TotalCurrentLog currentLog) {
         Logging logging = Logging.instance();
         LoggerFactory logger = logging.rootLogger;
-        TotalCurrentLog currentLog = new TotalCurrentLog(logger);
         XboxController controller = new XboxController(0);
         m_discus = new DiscusBare(logger, currentLog);
         m_viz = new ArmVisualization(m_discus::getPosition, "discus", 0);

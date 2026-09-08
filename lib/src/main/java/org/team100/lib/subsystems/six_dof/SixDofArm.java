@@ -5,15 +5,18 @@ import java.util.List;
 import org.team100.lib.commands.MoveAndHold;
 import org.team100.lib.dynamics.six_dof.SixDofDynamicsNewtonEuler;
 import org.team100.lib.dynamics.six_dof.SixDofEffort;
+import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.se3.VelocitySE3;
 import org.team100.lib.geometry.six_dof.SixDofAcceleration;
 import org.team100.lib.geometry.six_dof.SixDofConfig;
 import org.team100.lib.geometry.six_dof.SixDofPose;
+import org.team100.lib.geometry.six_dof.SixDofState;
 import org.team100.lib.geometry.six_dof.SixDofVelocity;
 import org.team100.lib.kinematics.six_dof.SixDofFeasibility;
 import org.team100.lib.kinematics.six_dof.SixDofKinematics;
 import org.team100.lib.kinematics.six_dof.SixDofKinematicsPoE;
 import org.team100.lib.logging.LoggerFactory;
+import org.team100.lib.mechanism.RotaryMechanism;
 import org.team100.lib.motor.Motor;
 import org.team100.lib.motor.sim.SimulatedMotor;
 import org.team100.lib.profile.r1.ProfileR1;
@@ -33,17 +36,22 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Six-DOF arm, for training.
  */
 public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> {
+    private static final double DT = TimedRobot100.LOOP_PERIOD_S;
+
     private final LoggerFactory m_log;
 
     final SixDofKinematics m_kinematics;
     final SixDofDynamicsNewtonEuler m_dynamics;
     final SixDofFeasibility m_feasibility;
-    private final Motor m_q1;
-    private final Motor m_q2;
-    private final Motor m_q3;
-    private final Motor m_q4;
-    private final Motor m_q5;
-    private final Motor m_q6;
+    private final RotaryMechanism m_q1;
+    private final RotaryMechanism m_q2;
+    private final RotaryMechanism m_q3;
+    private final RotaryMechanism m_q4;
+    private final RotaryMechanism m_q5;
+    private final RotaryMechanism m_q6;
+
+    private SixDofConfig m_q;
+    private SixDofVelocity m_qdot = new SixDofVelocity(0, 0, 0, 0, 0, 0);
 
     public SixDofArm(LoggerFactory parent) {
         m_log = parent.type(this);
@@ -53,14 +61,41 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
         m_dynamics = new SixDofDynamicsNewtonEuler(
                 0.1, 0.3, 0.3, 0.1,
                 0.5, 1, 1, 0.5);
-        m_feasibility = new SixDofFeasibility(m_kinematics);
+        SixDofConfig qMin = new SixDofConfig(
+                -Math.PI, 0, -Math.PI,
+                -Math.PI, -Math.PI / 2, -Math.PI);
+        SixDofConfig qMax = new SixDofConfig(
+                Math.PI, Math.PI, Math.PI,
+                Math.PI, Math.PI / 2, Math.PI);
+        m_feasibility = new SixDofFeasibility(m_kinematics, qMin, qMax);
 
-        m_q1 = new SimulatedMotor(m_log.name("q1"), 600);
-        m_q2 = new SimulatedMotor(m_log.name("q2"), 600);
-        m_q3 = new SimulatedMotor(m_log.name("q3"), 600);
-        m_q4 = new SimulatedMotor(m_log.name("q4"), 600);
-        m_q5 = new SimulatedMotor(m_log.name("q5"), 600);
-        m_q6 = new SimulatedMotor(m_log.name("q6"), 600);
+        LoggerFactory q1 = m_log.name("q1");
+        LoggerFactory q2 = m_log.name("q2");
+        LoggerFactory q3 = m_log.name("q3");
+        LoggerFactory q4 = m_log.name("q4");
+        LoggerFactory q5 = m_log.name("q5");
+        LoggerFactory q6 = m_log.name("q6");
+        Motor m1 = new SimulatedMotor(q1, 600);
+        Motor m2 = new SimulatedMotor(q2, 600);
+        Motor m3 = new SimulatedMotor(q3, 600);
+        Motor m4 = new SimulatedMotor(q4, 600);
+        Motor m5 = new SimulatedMotor(q5, 600);
+        Motor m6 = new SimulatedMotor(q6, 600);
+
+        m_q1 = new RotaryMechanism(
+                q1, m1, m1.encoder(), 0, 1, qMin.q1(), qMax.q1());
+        m_q2 = new RotaryMechanism(
+                q2, m2, m2.encoder(), 0, 1, qMin.q2(), qMax.q2());
+        m_q3 = new RotaryMechanism(
+                q3, m3, m3.encoder(), 0, 1, qMin.q3(), qMax.q3());
+        m_q4 = new RotaryMechanism(
+                q4, m4, m4.encoder(), 0, 1, qMin.q4(), qMax.q4());
+        m_q5 = new RotaryMechanism(
+                q5, m5, m5.encoder(), 0, 1, qMin.q5(), qMax.q5());
+        m_q6 = new RotaryMechanism(
+                q6, m6, m6.encoder(), 0, 1, qMin.q6(), qMax.q6());
+
+        m_q = getConfig();
     }
 
     @Override
@@ -84,7 +119,7 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
             System.out.println("infeasible pose " + StrUtil.poseStr(p));
             return null;
         }
-        return SixDofConfig.getBest(qFeasible, q0);
+        return SixDofConfig.nearest(qFeasible, q0);
     }
 
     public void set(SixDofConfig q, SixDofVelocity qdot, SixDofAcceleration qddot) {
@@ -92,13 +127,31 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
         set(q, qdot, f);
     }
 
-    public void set(SixDofConfig q, SixDofVelocity qdot, SixDofEffort f) {
+    /** Desired config, with limits applied. */
+    public SixDofConfig getConfigWithinLimits() {
+        return new SixDofConfig(
+                m_q1.getUnwrappedPositionWithinLimits(),
+                m_q2.getUnwrappedPositionWithinLimits(),
+                m_q3.getUnwrappedPositionWithinLimits(),
+                m_q4.getUnwrappedPositionWithinLimits(),
+                m_q5.getUnwrappedPositionWithinLimits(),
+                m_q6.getUnwrappedPositionWithinLimits());
+    }
+
+    public SixDofState set(SixDofConfig q, SixDofVelocity qdot, SixDofEffort f) {
         m_q1.setUnwrappedPosition(q.q1(), qdot.q1dot(), f.t1());
         m_q2.setUnwrappedPosition(q.q2(), qdot.q2dot(), f.t2());
         m_q3.setUnwrappedPosition(q.q3(), qdot.q3dot(), f.t3());
         m_q4.setUnwrappedPosition(q.q4(), qdot.q4dot(), f.t4());
         m_q5.setUnwrappedPosition(q.q5(), qdot.q5dot(), f.t5());
         m_q6.setUnwrappedPosition(q.q6(), qdot.q6dot(), f.t6());
+
+        q = getConfigWithinLimits();
+        SixDofAcceleration qddot = SixDofAcceleration.solve(m_q, q, m_qdot, DT);
+        qdot = SixDofVelocity.evolve(m_qdot, qddot, DT);
+        m_q = q;
+        m_qdot = qdot;
+        return new SixDofState(q, qdot);
     }
 
     public SixDofVelocity qdot(SixDofConfig q, VelocitySE3 xdot) {

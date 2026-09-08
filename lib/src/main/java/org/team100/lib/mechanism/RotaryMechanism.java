@@ -25,6 +25,7 @@ import edu.wpi.first.math.MathUtil;
  * difference.
  */
 public class RotaryMechanism implements Player {
+    private static final boolean DEBUG = false;
     private final Motor m_motor;
     private final RotaryPositionSensor m_sensor;
     private final double m_gearRatio;
@@ -169,6 +170,8 @@ public class RotaryMechanism implements Player {
     /**
      * Apply limits and gear ratio, and set the resulting motor position.
      * 
+     * Use getUnwrappedPositionWithinLimits to see the actual desired position.
+     * 
      * This is the "unwrapped" position, i.e. the domain is infinite, not cyclical
      * within +/- pi.
      * 
@@ -183,14 +186,16 @@ public class RotaryMechanism implements Player {
             double torqueNm) {
         m_log_desired_unwrapped_position.log(() -> unwrappedPositionRad);
         if (unwrappedPositionRad < m_minPositionRad) {
-            System.out.printf("WARNING: requested position %8.3f less than min %8.3f\n",
-                    unwrappedPositionRad, m_minPositionRad);
+            if (DEBUG)
+                System.out.printf("RotaryMechanism: requested position %8.3f less than min %8.3f\n",
+                        unwrappedPositionRad, m_minPositionRad);
             m_motor.stop();
             return;
         }
         if (unwrappedPositionRad > m_maxPositionRad) {
-            System.out.printf("WARNING: requested position %8.3f more than max %8.3f\n",
-                    unwrappedPositionRad, m_maxPositionRad);
+            if (DEBUG)
+                System.out.printf("RotaryMechanism: requested position %8.3f more than max %8.3f\n",
+                        unwrappedPositionRad, m_maxPositionRad);
             m_motor.stop();
             return;
         }
@@ -229,7 +234,7 @@ public class RotaryMechanism implements Player {
     }
 
     /**
-     * Returns the "wrapped" angular position, i.e. this dimension is cyclical, with
+     * Current measurement, "wrapped", i.e. this dimension is cyclical, with
      * values beyond +/- pi mapped back to the +/- pi interval: 2pi is mapped to 0,
      * 5pi/4 is mapped to pi/4, etc.
      * 
@@ -239,7 +244,7 @@ public class RotaryMechanism implements Player {
         return m_sensor.getWrappedPositionRad();
     }
 
-    /** Unwrapped domain is infinite. */
+    /** Current measurement. Unwrapped domain is infinite. */
     public double getUnwrappedPositionRad() {
         return m_sensor.getUnwrappedPositionRad();
     }

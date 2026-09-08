@@ -5,7 +5,7 @@ import java.util.function.Supplier;
 
 import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.se2.ChassisAcceleration;
-import org.team100.lib.hid.Velocity;
+import org.team100.lib.hid.DriverVelocity;
 import org.team100.lib.logging.Level;
 import org.team100.lib.logging.LoggerFactory;
 import org.team100.lib.logging.LoggerFactory.ChassisSpeedsLogger;
@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
  */
 public class DriveChassisSpeed extends Command {
 
-    private final Supplier<Velocity> m_twistSupplier;
+    private final Supplier<DriverVelocity> m_twistSupplier;
     private final SwerveDriveSubsystem m_drive;
     private final SwerveKinodynamics m_swerveKinodynamics;
     private final ChassisSpeedsLogger m_log_chassis_speeds;
@@ -31,7 +31,7 @@ public class DriveChassisSpeed extends Command {
     public DriveChassisSpeed(
             LoggerFactory parent,
             SwerveKinodynamics swerveKinodynamics,
-            Supplier<Velocity> twistSupplier,
+            Supplier<DriverVelocity> twistSupplier,
             SwerveDriveSubsystem drive) {
         LoggerFactory log = parent.type(this);
         m_twistSupplier = twistSupplier;
@@ -44,7 +44,7 @@ public class DriveChassisSpeed extends Command {
 
     @Override
     public void execute() {
-        Velocity clipped = m_twistSupplier.get().clip(1.0);
+        DriverVelocity clipped = m_twistSupplier.get().clip(1.0);
         double maxSpeed = m_swerveKinodynamics.getMaxDriveVelocityM_S();
         double maxOmega = m_swerveKinodynamics.getMaxAngleSpeedRad_S();
         ChassisSpeeds scaled = new ChassisSpeeds(

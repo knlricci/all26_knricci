@@ -1,6 +1,5 @@
 package org.team100.lib.subsystems.prr;
 
-
 import org.team100.lib.geometry.prr.PRRAcceleration;
 import org.team100.lib.geometry.prr.PRRConfig;
 import org.team100.lib.geometry.prr.PRRVelocity;
