@@ -36,7 +36,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /**
- * Planar RRR arm, for training.
+ * Planar RRR arm, for training, all motors independent (i.e. flying).
  */
 public class RRRArmIndependent extends SubsystemBase implements RRRArm {
     // private static final double DT = TimedRobot100.LOOP_PERIOD_S;
@@ -123,21 +123,6 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
     }
 
     @Override
-    public double l1() {
-        return m_kinematics.l1;
-    }
-
-    @Override
-    public double l2() {
-        return m_kinematics.l2;
-    }
-
-    @Override
-    public double l3() {
-        return m_kinematics.l3;
-    }
-
-    @Override
     public void set(RRRConfig q, RRRVelocity qdot, RRRAcceleration qddot) {
         RRREffort f = m_dynamics.effort(q, qdot, qddot);
         set(q, qdot, f);
@@ -149,11 +134,6 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
         m_q3.setUnwrappedPosition(q.q3(), qdot.q3dot(), f.t3());
     }
 
-    /**
-     * Choose the feasible config closest to the current config.
-     * 
-     * @param p tool center point pose
-     */
     @Override
     public RRRConfig config(Pose2d p) {
         RRRConfig q0 = getConfig();
@@ -178,7 +158,6 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
         return m_kinematics.inverse(q, xdot, xddot);
     }
 
-    /** Current measured configuration. */
     @Override
     public RRRConfig getConfig() {
         return new RRRConfig(
@@ -187,13 +166,13 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
                 m_q3.getUnwrappedPositionRad());
     }
 
-    /** Current velocity. */
+    @Override
     public RRRVelocity getVelocity() {
         return new RRRVelocity(
                 m_q1.getVelocityRad_S(),
                 m_q2.getVelocityRad_S(),
                 m_q3.getVelocityRad_S());
-    }  
+    }
 
     public Pose2d pose(RRRConfig q) {
         return m_kinematics.forward(q).p4();

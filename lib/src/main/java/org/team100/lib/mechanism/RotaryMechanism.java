@@ -250,6 +250,10 @@ public class RotaryMechanism implements Player {
         return m_maxPositionRad;
     }
 
+    /**
+     * Stop the mechanism. Depending on the brake mode of the motor, this may be a
+     * "zero torque" condition, or a "braking" condition.
+     */
     public void stop() {
         m_motor.stop();
     }

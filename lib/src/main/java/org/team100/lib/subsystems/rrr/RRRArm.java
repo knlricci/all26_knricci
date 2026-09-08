@@ -14,40 +14,44 @@ import edu.wpi.first.math.numbers.N3;
 
 /**
  * NOTE: using the SE2 position API directly risks "flipping" in an uncontrolled
- * way.
- * 
- * Test your SE2 paths in simulation before using them on a real mechanism.
+ * way. Test your SE2 paths in simulation before using them on a real mechanism.
  */
 public interface RRRArm extends PositionSubsystemSE2, PositionSubsystemRn<N3> {
 
-    /** TODO: remove this */
     RRRKinematicsPoE kinematics();
 
-    /** TODO: remove this */
     RRRFeasibility feasibility();
 
-    /** Current measurement as config. */
+    /**
+     * Current measurement.
+     */
     RRRConfig getConfig();
 
+    /**
+     * Current measured velocity.
+     */
     RRRVelocity getVelocity();
 
-    /** TODO: remove this */
+    /**
+     * Choose the feasible config closest to the current config.
+     * 
+     * @param p tool center point pose
+     */
     RRRConfig config(Pose2d p);
 
-    /** TODO: remove this */
+    /**
+     * Velocity for xdot, at config q.
+     */
     RRRVelocity qdot(RRRConfig q, VelocitySE2 xdot);
 
     /**
-     * Imposes joint limits; returns the position and velocity actually used.
+     * Actuate, using dynamics to compute joint forces.
      */
     void set(RRRConfig q, RRRVelocity qdot, RRRAcceleration qddot);
 
+    /**
+     * Stop the mechanism. Depending on the brake mode of the motor, this may be a
+     * "zero torque" condition, or a "braking" condition.
+     */
     void stop();
-
-    /** TODO: remove these (they're in kinematics) */
-    double l1();
-
-    double l2();
-
-    double l3();
 }

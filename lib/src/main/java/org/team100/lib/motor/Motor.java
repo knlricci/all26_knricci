@@ -106,7 +106,10 @@ public interface Motor extends Player, TotalCurrentLog.Reporter {
             double velocityRad_S,
             double torqueNm);
 
-    /** This is not "hold position" this is "torque off". */
+    /**
+     * Stop the motor. Depending on the brake mode of the motor, this may be a
+     * "zero torque" condition, or a "braking" condition.
+     */
     void stop();
 
     /////////////////////////////////////////////////////////////
