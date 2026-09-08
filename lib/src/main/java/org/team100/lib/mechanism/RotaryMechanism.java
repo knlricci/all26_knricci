@@ -37,9 +37,6 @@ public class RotaryMechanism implements Player {
     private final DoubleLogger m_log_unwrapped_position;
     private final DoubleLogger m_log_desired_unwrapped_position;
 
-    /** Respects limits. */
-    private double m_unwrappedPositionWithinLimits;
-
     /**
      * The provided sensor encapsulates the motor sensor and/or the external
      * absolute sensor, if used. See ProxyRotaryPositionSensor and
@@ -199,16 +196,10 @@ public class RotaryMechanism implements Player {
             m_motor.stop();
             return;
         }
-        m_unwrappedPositionWithinLimits = unwrappedPositionRad;
         m_motor.setUnwrappedPosition(
                 unwrappedPositionRad * m_gearRatio,
                 velocityRad_S * m_gearRatio,
                 torqueNm / m_gearRatio);
-    }
-
-    /** Desired position, with limits applied. */
-    public double getUnwrappedPositionWithinLimits() {
-        return m_unwrappedPositionWithinLimits;
     }
 
     public StateR1 getUnwrappedMeasurement() {

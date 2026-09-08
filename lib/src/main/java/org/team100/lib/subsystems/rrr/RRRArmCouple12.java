@@ -214,15 +214,6 @@ public class RRRArmCouple12 extends SubsystemBase implements RRRArm {
                 m_q3.getUnwrappedPositionRad());
     }
 
-    /** Desired config, with limits applied. */
-    public RRRConfig getConfigWithinLimits() {
-        // q2 kinematic angle is the difference between mechanism angles
-        return new RRRConfig(
-                m_q1.getUnwrappedPositionWithinLimits(),
-                m_q2.getUnwrappedPositionWithinLimits() - m_q1.getUnwrappedPositionWithinLimits(),
-                m_q3.getUnwrappedPositionWithinLimits());
-    }
-
     /** Current velocity. */
     public RRRVelocity getVelocity() {
         // q2 kinematic velocity is the difference between mechanism velocities

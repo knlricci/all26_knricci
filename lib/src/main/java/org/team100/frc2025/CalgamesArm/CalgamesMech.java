@@ -14,10 +14,8 @@ import org.team100.lib.config.Friction;
 import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
 import org.team100.lib.dynamics.prr.PRREffort;
-import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.prr.PRRAcceleration;
 import org.team100.lib.geometry.prr.PRRConfig;
-import org.team100.lib.geometry.prr.PRRState;
 import org.team100.lib.geometry.prr.PRRVelocity;
 import org.team100.lib.geometry.se2.AccelerationSE2;
 import org.team100.lib.geometry.se2.DirectionSE2;
@@ -68,7 +66,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class CalgamesMech extends SubsystemBase implements Music, PositionSubsystemSE2, SubsystemPRR {
     private static final boolean DEBUG = false;
     private boolean DISABLED = false;
-    private static final double DT = TimedRobot100.LOOP_PERIOD_S;
 
     ////////////////////////////////////////////////////////
     ///
@@ -125,9 +122,6 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
     private final LoggerFactory m_profileLog;
 
     private final List<Player> m_players;
-
-    private PRRConfig m_q;
-    private PRRVelocity m_qdot = new PRRVelocity(0, 0, 0);
 
     public CalgamesMech(
             LoggerFactory log,
@@ -313,13 +307,6 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
                 m_wrist.getWrappedPositionRad());
     }
 
-    public PRRConfig getConfigWithinLimits() {
-        return new PRRConfig(
-                m_elevatorBack.getPositionM(),
-                m_shoulder.getUnwrappedPositionWithinLimits(),
-                m_wrist.getUnwrappedPositionWithinLimits());
-    }
-
     public PRRVelocity getJointVelocity() {
         return new PRRVelocity(
                 m_elevatorBack.getVelocityM_S(),
@@ -381,7 +368,7 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
     @Override
     public void set(PRRConfig c, PRRVelocity jv, PRRAcceleration ja) {
         PRREffort jf = m_dynamics.forward(c, jv, ja);
-         set(c, jv, ja, jf);
+        set(c, jv, ja, jf);
     }
 
     /** This is not "hold position" this is "torque off". */
@@ -663,23 +650,16 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
         m_shoulder.setUnwrappedPosition(0, 0, 0);
     }
 
-    private PRRState set(PRRConfig c, PRRVelocity jv, PRRAcceleration ja, PRREffort jf) {
+    private void set(PRRConfig c, PRRVelocity jv, PRRAcceleration ja, PRREffort jf) {
         logConfig(c, jv, ja, jf);
         m_elevatorFront.setPosition(c.q1(), jv.q1dot(), jf.f1());
         m_elevatorBack.setPosition(c.q1(), jv.q1dot(), jf.f1());
         if (DISABLED) {
             m_wrist.setUnwrappedPosition(2, 0, 0);
-            return new PRRState(getConfig(), getJointVelocity());
+            return;
         }
         m_wrist.setUnwrappedPosition(c.q3(), jv.q3dot(), jf.t3());
         m_shoulder.setUnwrappedPosition(c.q2(), jv.q2dot(), jf.t2());
-
-        PRRConfig q = getConfigWithinLimits();
-        PRRAcceleration qddot = PRRAcceleration.solve(m_q, q, m_qdot, DT);
-        PRRVelocity qdot = PRRVelocity.evolve(m_qdot, qddot, DT);
-        m_q = q;
-        m_qdot = qdot;
-        return new PRRState(q, qdot);
     }
 
     public Command setDisabled(boolean disabled) {

@@ -187,14 +187,6 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
                 m_q3.getUnwrappedPositionRad());
     }
 
-    /** Desired config, with limits applied. */
-    public RRRConfig getConfigWithinLimits() {
-        return new RRRConfig(
-                m_q1.getUnwrappedPositionWithinLimits(),
-                m_q2.getUnwrappedPositionWithinLimits(),
-                m_q3.getUnwrappedPositionWithinLimits());
-    }
-
     /** Current velocity. */
     public RRRVelocity getVelocity() {
         return new RRRVelocity(

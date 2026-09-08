@@ -31,12 +31,6 @@ public interface RRRArm extends PositionSubsystemSE2, PositionSubsystemRn<N3> {
 
     RRRVelocity getVelocity();
 
-    /**
-     * Most-recent desired config, with limits applied.
-     * TODO: apply limits upstream, remove this method
-     */
-    RRRConfig getConfigWithinLimits();
-
     /** TODO: remove this */
     RRRConfig config(Pose2d p);
 
