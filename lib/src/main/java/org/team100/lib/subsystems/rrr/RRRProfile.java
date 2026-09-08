@@ -128,8 +128,6 @@ public class RRRProfile {
         // The magnitude of the end velocity in the direction of motion. The desired
         // end velocity may not be parallel with the direction. We could just use
         // zero here, but using the component is less wrong.
-        // Note this magnitude should use the config distance metric.
-        // TODO: verify that the velocity is correctly scaled.
         double projectedGoalQdot = goalQdot.toVector().dot(m_unit);
 
         // The one-dimensional goal uses the distance metric.
