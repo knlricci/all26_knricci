@@ -102,13 +102,14 @@ public class RRKinematics {
      */
     public List<RRConfig> inverse(Translation2d x, Double q1Default) {
         if (DEBUG)
-            System.out.printf("t %s\n", StrUtil.transStr(x));
+            System.out.printf("RRKinematics: x %s\n", StrUtil.transStr(x));
         // Use law of cosines.
         double r = x.getNorm();
         if (r < 1e-3) {
             // This can only occur if l1 and l2 are (nearly) the same,
             // so use the default, and 180 degrees for the elbow.
-            System.out.printf("RRKinematics: singularity for %s\n", StrUtil.transStr(x));
+            if (DEBUG)
+                System.out.printf("RRKinematics: singularity for %s\n", StrUtil.transStr(x));
             if (q1Default == null)
                 throw new IllegalArgumentException("RR singularity with no default");
             return List.of(new RRConfig(q1Default, Math.PI));
@@ -120,7 +121,8 @@ public class RRKinematics {
         double alpha = Math.acos(c2);
 
         if (Double.isNaN(alpha) || Double.isNaN(beta) || Double.isNaN(gamma)) {
-            System.out.printf("RRKinematics: no solution %s\n", StrUtil.transStr(x));
+            if (DEBUG)
+                System.out.printf("RRKinematics: no solution %s\n", StrUtil.transStr(x));
             return List.of();
         }
 
@@ -128,7 +130,8 @@ public class RRKinematics {
         double q2up = MathUtil.angleModulus(alpha + Math.PI);
 
         if (Math.abs(q2up) < 1e-3) {
-            System.out.printf("RRKinematics: elbow singularity %s\n", StrUtil.transStr(x));
+            if (DEBUG)
+                System.out.printf("RRKinematics: elbow singularity %s\n", StrUtil.transStr(x));
             return List.of(new RRConfig(q1up, q2up));
         }
 

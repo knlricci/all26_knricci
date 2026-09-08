@@ -27,7 +27,7 @@ public record RRVelocity(double q1dot, double q2dot) {
     }
 
     public double norm() {
-        return Math.sqrt(RRConfig.s1 * q1dot * q1dot + RRConfig.s2 * q2dot * q2dot);
+        return Math.sqrt(q1dot * q1dot + q2dot * q2dot);
     }
 
     /**

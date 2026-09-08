@@ -79,4 +79,11 @@ public class Robot extends TimedRobot100 {
     public void teleopExit() {
     }
 
+    @Override
+    public void disabledPeriodic() {
+    }
+
+    @Override
+    public void simulationPeriodic() {
+    }
 }

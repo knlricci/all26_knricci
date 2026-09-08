@@ -119,12 +119,12 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
             System.out.println("infeasible pose " + StrUtil.poseStr(p));
             return null;
         }
-        return SixDofConfig.getBest(qFeasible, q0);
+        return SixDofConfig.nearest(qFeasible, q0);
     }
 
-    public SixDofState set(SixDofConfig q, SixDofVelocity qdot, SixDofAcceleration qddot) {
+    public void set(SixDofConfig q, SixDofVelocity qdot, SixDofAcceleration qddot) {
         SixDofEffort f = m_dynamics.effort(q, qdot, qddot);
-        return set(q, qdot, f);
+        set(q, qdot, f);
     }
 
     /** Desired config, with limits applied. */
@@ -211,18 +211,11 @@ public class SixDofArm extends SubsystemBase implements PositionSubsystemRn<N6> 
     }
 
     @Override
-    public List<StateR1> setRn(List<ControlR1> setpoint) {
+    public void setRn(List<ControlR1> setpoint) {
         SixDofConfig q = SixDofConfig.fromList(setpoint);
         SixDofVelocity qdot = SixDofVelocity.fromList(setpoint);
         SixDofAcceleration qddot = SixDofAcceleration.fromList(setpoint);
-        SixDofState s = set(q, qdot, qddot);
-        return List.of(
-                new StateR1(s.q().q1(), s.qdot().q1dot()),
-                new StateR1(s.q().q2(), s.qdot().q2dot()),
-                new StateR1(s.q().q3(), s.qdot().q3dot()),
-                new StateR1(s.q().q4(), s.qdot().q4dot()),
-                new StateR1(s.q().q5(), s.qdot().q5dot()),
-                new StateR1(s.q().q6(), s.qdot().q6dot()));
+        set(q, qdot, qddot);
     }
 
     @Override

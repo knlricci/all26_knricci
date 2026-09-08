@@ -8,10 +8,8 @@ import org.team100.lib.config.Identity;
 import org.team100.lib.config.PIDConstants;
 import org.team100.lib.dynamics.rrr.RRRDynamicsNewtonEuler;
 import org.team100.lib.dynamics.rrr.RRREffort;
-import org.team100.lib.framework.TimedRobot100;
 import org.team100.lib.geometry.rrr.RRRAcceleration;
 import org.team100.lib.geometry.rrr.RRRConfig;
-import org.team100.lib.geometry.rrr.RRRState;
 import org.team100.lib.geometry.rrr.RRRVelocity;
 import org.team100.lib.geometry.se2.AccelerationSE2;
 import org.team100.lib.geometry.se2.VelocitySE2;
@@ -41,7 +39,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * Planar RRR arm, for training.
  */
 public class RRRArmIndependent extends SubsystemBase implements RRRArm {
-    private static final double DT = TimedRobot100.LOOP_PERIOD_S;
+    // private static final double DT = TimedRobot100.LOOP_PERIOD_S;
     private final LoggerFactory m_log;
     private final TotalCurrentLog m_currentLog;
     final RRRKinematicsPoE m_kinematics;
@@ -51,9 +49,6 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
     private final RotaryMechanism m_q1;
     private final RotaryMechanism m_q2;
     private final RotaryMechanism m_q3;
-
-    private RRRConfig m_q;
-    private RRRVelocity m_qdot = new RRRVelocity(0, 0, 0);
 
     public RRRArmIndependent(LoggerFactory parent, TotalCurrentLog currentLog) {
         m_log = parent.type(this);
@@ -108,8 +103,16 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
         m_q1 = new RotaryMechanism(q1, m1, m1.encoder(), 0, r1, -Math.PI / 2, Math.PI / 2);
         m_q2 = new RotaryMechanism(q2, m2, m2.encoder(), 0, r2, -Math.PI / 2, Math.PI / 2);
         m_q3 = new RotaryMechanism(q3, m3, m3.encoder(), 0, r3, -Math.PI / 2, Math.PI / 2);
+    }
 
-        m_q = getConfig();
+    @Override
+    public RRRKinematicsPoE kinematics() {
+        return m_kinematics;
+    }
+
+    @Override
+    public RRRFeasibility feasibility() {
+        return m_feasibility;
     }
 
     @Override
@@ -135,21 +138,15 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
     }
 
     @Override
-    public RRRState set(RRRConfig q, RRRVelocity qdot, RRRAcceleration qddot) {
+    public void set(RRRConfig q, RRRVelocity qdot, RRRAcceleration qddot) {
         RRREffort f = m_dynamics.effort(q, qdot, qddot);
-        return set(q, qdot, f);
+        set(q, qdot, f);
     }
 
-    public RRRState set(RRRConfig q, RRRVelocity qdot, RRREffort f) {
+    public void set(RRRConfig q, RRRVelocity qdot, RRREffort f) {
         m_q1.setUnwrappedPosition(q.q1(), qdot.q1dot(), f.t1());
         m_q2.setUnwrappedPosition(q.q2(), qdot.q2dot(), f.t2());
         m_q3.setUnwrappedPosition(q.q3(), qdot.q3dot(), f.t3());
-        q = getConfigWithinLimits();
-        RRRAcceleration qddot = RRRAcceleration.solve(m_q, q, m_qdot, DT);
-        qdot = RRRVelocity.evolve(m_qdot, qddot, DT);
-        m_q = q;
-        m_qdot = qdot;
-        return new RRRState(q, qdot);
     }
 
     /**
@@ -170,7 +167,7 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
             System.out.println("RRRArmIndependent: infeasible " + StrUtil.poseStr(p));
             return null;
         }
-        return RRRConfig.getBest(qFeasible, q0);
+        return RRRConfig.nearest(qFeasible, q0);
     }
 
     public RRRVelocity qdot(RRRConfig q, VelocitySE2 xdot) {
@@ -204,16 +201,7 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
                 m_q1.getVelocityRad_S(),
                 m_q2.getVelocityRad_S(),
                 m_q3.getVelocityRad_S());
-    }
-
-    @Override
-    public Pose2d pose() {
-        return pose(getConfig());
-    }
-
-    public VelocitySE2 velocity() {
-        return velocity(getConfig(), getVelocity());
-    }
+    }  
 
     public Pose2d pose(RRRConfig q) {
         return m_kinematics.forward(q).p4();
@@ -232,7 +220,9 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
 
     @Override
     public StateSE2 getState() {
-        return new StateSE2(pose(), velocity());
+        RRRConfig q = getConfig();
+        RRRVelocity qdot = getVelocity();
+        return new StateSE2(pose(q), velocity(q, qdot));
     }
 
     @Override
@@ -246,29 +236,24 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
     }
 
     @Override
-    public StateSE2 set(ControlSE2 setpoint) {
+    public void set(ControlSE2 setpoint) {
         Pose2d x = setpoint.pose();
         VelocitySE2 xdot = setpoint.velocity();
         AccelerationSE2 xddot = setpoint.acceleration();
         RRRConfig q = config(x);
         RRRVelocity qdot = qdot(q, xdot);
         RRRAcceleration qddot = qddot(q, xdot, xddot);
-        RRRState s = set(q, qdot, qddot);
-        return new StateSE2(pose(s.q()), velocity(s.q(), s.qdot()));
+        set(q, qdot, qddot);
     }
 
     @Override
-    public List<StateR1> setRn(List<ControlR1> p) {
+    public void setRn(List<ControlR1> p) {
         ControlR1 c1 = p.get(0);
         ControlR1 c2 = p.get(1);
         ControlR1 c3 = p.get(2);
         RRRConfig q = new RRRConfig(c1.x(), c2.x(), c3.x());
         RRRVelocity qdot = new RRRVelocity(c1.v(), c2.v(), c3.v());
         RRRAcceleration qddot = new RRRAcceleration(c1.a(), c2.a(), c3.a());
-        RRRState s = set(q, qdot, qddot);
-        return List.of(
-                new StateR1(s.q().q1(), s.qdot().q1dot()),
-                new StateR1(s.q().q2(), s.qdot().q2dot()),
-                new StateR1(s.q().q3(), s.qdot().q3dot()));
+        set(q, qdot, qddot);
     }
 }

@@ -48,6 +48,7 @@ public class MoveJointsManually extends Command {
         RRRConfig q = m_q.evolve(m_qdot, qddot, DT);
 
         m_arm.set(q, m_qdot, qddot);
+        // TODO: apply limits prior to actuation, remove this method
         q = m_arm.getConfigWithinLimits();
         qddot = RRRAcceleration.solve(m_q, q, m_qdot, DT);
         qdot = RRRVelocity.evolve(m_qdot, qddot, DT);

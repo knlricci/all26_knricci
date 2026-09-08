@@ -359,14 +359,14 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
 
     /** There are no profiles here, so this control needs to be feasible. */
     @Override
-    public StateSE2 set(ControlSE2 control) {
+    public void set(ControlSE2 control) {
         Pose2d pose = control.pose();
         List<PRRConfig> configs = m_kinematics.inverse(pose);
         if (configs.isEmpty()) {
             if (DEBUG)
                 System.out.println("skipping invalid config");
             stop();
-            return getState();
+            return;
         }
         // for now always use the "up" config.
         PRRConfig config = configs.get(0);
@@ -375,16 +375,13 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
         }
         PRRVelocity jv = m_kinematics.inverse(config, control.model());
         PRRAcceleration ja = m_kinematics.inverse(config, control);
-        PRRState s = set(config, jv, ja);
-        Pose2d p = m_kinematics.forward(s.q());
-        VelocitySE2 v = m_kinematics.forward(s.q(), s.qdot());
-        return new StateSE2(p, v);
+        set(config, jv, ja);
     }
 
     @Override
-    public PRRState set(PRRConfig c, PRRVelocity jv, PRRAcceleration ja) {
+    public void set(PRRConfig c, PRRVelocity jv, PRRAcceleration ja) {
         PRREffort jf = m_dynamics.forward(c, jv, ja);
-        return set(c, jv, ja, jf);
+         set(c, jv, ja, jf);
     }
 
     /** This is not "hold position" this is "torque off". */

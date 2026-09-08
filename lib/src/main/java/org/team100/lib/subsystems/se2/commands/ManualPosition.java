@@ -8,9 +8,7 @@ import org.team100.lib.geometry.se2.AccelerationSE2;
 import org.team100.lib.geometry.se2.VelocitySE2;
 import org.team100.lib.hid.DriverVelocity;
 import org.team100.lib.state.ControlSE2;
-import org.team100.lib.state.StateSE2;
 import org.team100.lib.subsystems.se2.PositionSubsystemSE2;
-import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -20,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command;
  * cartesian space.
  */
 public class ManualPosition extends Command {
-    private static final boolean DEBUG = false;
     private static final double DT = TimedRobot100.LOOP_PERIOD_S;
     // scale stick input [-1,1] to movement in m/s and rad/s
     private static final double SCALE = 0.25;
@@ -57,19 +54,6 @@ public class ManualPosition extends Command {
         // Find new position using *previous* velocity and accel
         // x1 = x0 + v0 dt + 1/2 a dt^2
         m_pose = GeometryUtil.evolve(m_pose, m_v, a, DT);
-        // note the mechanism may not obey this instruction
-        StateSE2 actual = m_subsystem.set(new ControlSE2(m_pose, v, a));
-        // if the arm "flips" then the velocity will seem very high.
-        // TODO: handle flipping
-        m_pose = actual.pose();
-        m_v = actual.velocity();
-        if (v.norm() > 0.001 && m_v.norm() > 2 * v.norm()) {
-            // actual is much too high
-            System.out.printf("ManualPosition: input v %f actual v %f\n", v.norm(), m_v.norm());
-            System.out.printf("ManualPosition: input v %s actual v %s\n", v, m_v);
-            m_v = new VelocitySE2(0, 0, 0);
-        }
-        System.out.printf("ManualPosition: pose %s\n", StrUtil.poseStr(m_pose));
-
+        m_subsystem.set(new ControlSE2(m_pose, v, a));
     }
 }

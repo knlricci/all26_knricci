@@ -100,7 +100,7 @@ public class LynxArmTwoDof extends SubsystemBase implements AutoCloseable {
             System.out.println("LynxArmTwoDof: infeasible " + StrUtil.transStr(end));
             return;
         }
-        RRConfig q = RRConfig.getBest(qFeasible, q0);
+        RRConfig q = RRConfig.nearest(qFeasible, q0);
         // the joint coordinates use the 3d convention which is inverted
         // from the 2d one, so fix it here.
         m_boom.set(-1.0 * q.q1());

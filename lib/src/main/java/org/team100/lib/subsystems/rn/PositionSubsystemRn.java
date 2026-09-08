@@ -10,8 +10,8 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 
 /** Represents position in joint space ("Q") with N independent dimensions. */
 public interface PositionSubsystemRn<N extends Num> extends Subsystem {
-    /** May not respect setpoint; returns the actual setpoint used. */
-    List<StateR1> setRn(List<ControlR1> setpoint);
+
+    void setRn(List<ControlR1> setpoint);
 
     List<StateR1> getStateRn();
 

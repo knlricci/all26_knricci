@@ -1,7 +1,6 @@
 package org.team100.lib.subsystems.se2;
 
 import org.team100.lib.state.ControlSE2;
-import org.team100.lib.state.StateSE2;
 
 /**
  * A planar subsystem controlled by position.
@@ -23,7 +22,6 @@ public interface PositionSubsystemSE2 extends SubsystemSE2 {
      * of the mechanism.
      * 
      * @param setpoint for the next timestamp
-     * @return actual setpoint within limits
      */
-    StateSE2 set(ControlSE2 setpoint);
+    void set(ControlSE2 setpoint);
 }

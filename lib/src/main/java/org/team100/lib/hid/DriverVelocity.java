@@ -8,6 +8,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
  */
 public record DriverVelocity(double x, double y, double theta) {
 
+    /** L2 norm */
+    public double norm() {
+        return Math.sqrt(x * x + y * y + theta * theta);
+    }
+
     /**
      * Clip the translational velocity to the unit circle.
      * 
@@ -54,7 +59,6 @@ public record DriverVelocity(double x, double y, double theta) {
         double ratio = clamped / hyp;
         return new DriverVelocity(ratio * x, ratio * y, theta());
     }
-
 
     public DriverVelocity squashedDiamond(double maxX, double maxY, Rotation2d poseAngle) {
         double x = x();

@@ -116,7 +116,7 @@ public record VelocitySE2(double x, double y, double theta) {
 
     @Override
     public String toString() {
-        return String.format("(%5.2f, %5.2f, %5.2f)", x, y, theta);
+        return String.format("%7.4f, %7.4f, %7.4f", x, y, theta);
     }
 
     public static VelocitySE2 fromVector(Vector<N3> v) {

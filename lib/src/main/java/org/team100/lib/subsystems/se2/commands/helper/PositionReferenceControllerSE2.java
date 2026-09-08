@@ -29,7 +29,6 @@ public class PositionReferenceControllerSE2 {
     private final StateSE2Logger m_log_measurement;
     private final StateSE2Logger m_log_current;
     private final ControlSE2Logger m_log_next;
-    private final StateSE2Logger m_log_actual;
     private final StateSE2Logger m_log_error;
 
     /**
@@ -49,7 +48,6 @@ public class PositionReferenceControllerSE2 {
         m_log_measurement = log.StateSE2Logger(Level.TRACE, "measurement");
         m_log_current = log.StateSE2Logger(Level.TRACE, "current");
         m_log_next = log.controlSE2Logger(Level.TRACE, "next");
-        m_log_actual = log.StateSE2Logger(Level.TRACE, "actual");
         m_log_error = log.StateSE2Logger(Level.TRACE, "error");
         // initialize here so that the "done" state knows about the clock
         m_reference.initialize(subsystem.getState());
@@ -64,11 +62,10 @@ public class PositionReferenceControllerSE2 {
             StateSE2 current = m_reference.current();
             ControlSE2 next = m_reference.next();
             StateSE2 error = current.minus(measurement);
-            StateSE2 actual = m_subsystem.set(next);
+            m_subsystem.set(next);
             m_log_measurement.log(() -> measurement);
             m_log_current.log(() -> current);
             m_log_next.log(() -> next);
-            m_log_actual.log(() -> actual);
             m_log_error.log(() -> error);
             isDone();
             toGo();

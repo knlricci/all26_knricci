@@ -28,6 +28,10 @@ public record RRRVelocity(
                 q3dot);
     }
 
+    public RRRVelocity times(double a) {
+        return new RRRVelocity(a * q1dot, a * q2dot, a * q3dot);
+    }
+
     /**
      * a = (v1 - v0) / dt
      */
@@ -45,7 +49,7 @@ public record RRRVelocity(
 
     @Override
     public String toString() {
-        return String.format("%6.3f %6.3f %6.3f", q1dot, q2dot, q3dot);
+        return String.format("%6.3f, %6.3f, %6.3f", q1dot, q2dot, q3dot);
     }
 
 }

@@ -1,7 +1,10 @@
 package org.team100.lib.subsystems.rrr;
 
+import java.util.function.Supplier;
+
 import org.team100.lib.geometry.rrr.RRRConfig;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -17,12 +20,16 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 public class RRRVisualizer {
     private static final int WIDTH = 10;
     private static final Color8Bit COLOR = new Color8Bit(Color.kOrangeRed);
+    private static final Color8Bit COLOR2 = new Color8Bit(Color.kWhite);
     private static final double SCALE = 150;
 
     private final RRRArm m_arm;
     private final MechanismLigament2d m_l1;
     private final MechanismLigament2d m_l2;
     private final MechanismLigament2d m_l3;
+    private final MechanismRoot2d m_cross;
+    // making this mutable makes it easier to sequence construction
+    private Supplier<Translation2d> m_t;
 
     public RRRVisualizer(RRRArm arm) {
         m_arm = arm;
@@ -37,7 +44,17 @@ public class RRRVisualizer {
         root.append(m_l1);
         m_l1.append(m_l2);
         m_l2.append(m_l3);
+        m_cross = view.getRoot("pose", 100, 25);
+        m_cross.append(new MechanismLigament2d("cross1", 10, 0, 1, COLOR2));
+        m_cross.append(new MechanismLigament2d("cross2", 10, 90, 1, COLOR2));
+        m_cross.append(new MechanismLigament2d("cross3", 10, 180, 1, COLOR2));
+        m_cross.append(new MechanismLigament2d("cross4", 10, 270, 1, COLOR2));
+
         SmartDashboard.putData("View", view);
+    }
+
+    public void setT(Supplier<Translation2d> t) {
+        m_t = t;
     }
 
     public void periodic() {
@@ -45,5 +62,11 @@ public class RRRVisualizer {
         m_l1.setAngle(90 + Math.toDegrees(q.q1()));
         m_l2.setAngle(Math.toDegrees(q.q2()));
         m_l3.setAngle(Math.toDegrees(q.q3()));
+
+        if (m_t != null) {
+            Translation2d t = m_t.get();
+            if (t != null)
+                m_cross.setPosition(100 - SCALE * t.getY(), 25 + SCALE * t.getX());
+        }
     }
 }

@@ -970,7 +970,7 @@ class SwerveDrivePoseEstimator100Test implements Timeless {
             errorSum += error;
 
             if (DEBUG) {
-                System.out.printf("t %4.2f GT (%6.3f, %6.3f, %6.3f) xhat (%6.3f, %6.3f, %6.3f)\n",
+                System.out.printf("SwerveDrivePoseEstimator100Test: t %4.2f GT (%6.3f, %6.3f, %6.3f) xhat (%6.3f, %6.3f, %6.3f)\n",
                         t,
                         groundTruthState.poseMeters.getX(),
                         groundTruthState.poseMeters.getY(),

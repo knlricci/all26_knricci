@@ -117,7 +117,7 @@ public class RRArm extends SubsystemBase
             System.out.println("RRArm: infeasible " + StrUtil.transStr(p));
             return null;
         }
-        return RRConfig.getBest(qFeasible, q0);
+        return RRConfig.nearest(qFeasible, q0);
     }
 
     public RRVelocity qdot(RRConfig q, VelocityR2 xdot) {
@@ -193,27 +193,23 @@ public class RRArm extends SubsystemBase
 
     /** Ignores rotation */
     @Override
-    public StateR2 set(ControlR2 setpoint) {
+    public void set(ControlR2 setpoint) {
         Translation2d x = setpoint.translation();
         VelocityR2 xdot = setpoint.velocity();
         AccelerationR2 xddot = setpoint.acceleration();
         RRConfig q = config(x);
         RRVelocity qdot = qdot(q, xdot);
         RRAcceleration qddot = qddot(q, xdot, xddot);
-        RRState s = set(q, qdot, qddot);
-        return new StateR2(translation(s.q()), velocity(s.q(), s.qdot()));
+        set(q, qdot, qddot);
     }
 
     @Override
-    public List<StateR1> setRn(List<ControlR1> p) {
+    public void setRn(List<ControlR1> p) {
         ControlR1 c1 = p.get(0);
         ControlR1 c2 = p.get(1);
         RRConfig q = new RRConfig(c1.x(), c2.x());
         RRVelocity qdot = new RRVelocity(c1.v(), c2.v());
         RRAcceleration qddot = new RRAcceleration(c1.a(), c2.a());
-        RRState s = set(q, qdot, qddot);
-        return List.of(
-                new StateR1(s.q().q1(), s.qdot().q1dot()),
-                new StateR1(s.q().q2(), s.qdot().q2dot()));
+        set(q, qdot, qddot);
     }
 }

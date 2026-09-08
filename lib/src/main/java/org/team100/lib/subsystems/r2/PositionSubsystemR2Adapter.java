@@ -28,9 +28,8 @@ public class PositionSubsystemR2Adapter implements PositionSubsystemSE2 {
     }
 
     @Override
-    public StateSE2 set(ControlSE2 setpoint) {
-        StateR2 q = s.set(new ControlR2(setpoint.x(), setpoint.y()));
-        return new StateSE2(q.x(), q.y(), new StateR1());
+    public void set(ControlSE2 setpoint) {
+        s.set(new ControlR2(setpoint.x(), setpoint.y()));
     }
 
 }

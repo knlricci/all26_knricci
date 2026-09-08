@@ -9,45 +9,31 @@ import org.team100.lib.profile.r1.ProfileR1;
 import org.team100.lib.state.ControlR1;
 import org.team100.lib.state.StateR1;
 import org.team100.lib.subsystems.rrr.RRRArm;
-import org.team100.lib.util.StrUtil;
 
 import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N3;
 
 /**
- * Move the arm to the goal, endlessly.
- * 
- * Uses a single profile.
- * 
- * Interpolates each joint separately, so this is
- * immune to singularities (except at the endpoints),
- * but it might exceed the workspace limits.
+ * Use a 1d profile to coordinate all axes to the goal config.
  */
-public class MoveWithProfile extends MoveAndHold {
-
+public class MoveToConfigWithProfile extends MoveAndHold {
     private final RRRArm m_arm;
-    private final Pose2d m_goal;
+    private final RRRConfig m_goal;
     /** Profile walks from 0 to 1. */
     private final ProfileR1 m_profile;
 
     // this is the config at initialize
     private RRRConfig m_start;
-    // config goal depends on start, to choose the closest one.
-    private RRRConfig m_configGoal;
+
     // unit vector (using the distance metric) pointing from start to goal.
     private Vector<N3> m_unit;
 
     private ControlR1 m_setpoint;
-    // for now this is always 1.
     private StateR1 m_profileGoal;
 
-    public MoveWithProfile(RRRArm arm, ProfileR1 profile, Pose2d goal) {
+    public MoveToConfigWithProfile(RRRArm arm, ProfileR1 profile, RRRConfig goal) {
         m_arm = arm;
         m_goal = goal;
-        // Check feasibility in constructor to avoid later exception.
-        if (m_arm.config(m_goal) == null)
-            throw new IllegalArgumentException("infeasible goal");
         m_profile = profile;
         addRequirements(arm);
     }
@@ -55,13 +41,8 @@ public class MoveWithProfile extends MoveAndHold {
     @Override
     public void initialize() {
         m_start = m_arm.getConfig();
-        m_configGoal = m_arm.config(m_goal);
-        double distance = m_start.euclideanDistance(m_configGoal);
-        m_unit = RRRConfig.unit(m_start, m_configGoal);
-
-        if (m_configGoal == null)
-            throw new IllegalArgumentException(
-                    "infeasible goal: " + StrUtil.poseStr(m_goal));
+        double distance = m_start.euclideanDistance(m_goal);
+        m_unit = RRRConfig.unit(m_start, m_goal);
         // assumes initial velocity is zero :(
         m_setpoint = new ControlR1();
         // scale the profile to the norm
@@ -70,20 +51,16 @@ public class MoveWithProfile extends MoveAndHold {
 
     @Override
     public void execute() {
-        double distance = m_profileGoal.x();
-        if (distance < 1e-6) {
-            // we're already there
+        if (isDone()) {
             return;
         }
         m_setpoint = m_profile.calculate(
                 TimedRobot100.LOOP_PERIOD_S,
                 m_setpoint,
                 m_profileGoal);
-
         RRRConfig q = m_start.plus(RRRConfig.fromVector(m_unit.times(m_setpoint.x())));
         RRRVelocity qdot = RRRVelocity.fromVector(m_unit.times(m_setpoint.v()));
         RRRAcceleration qddot = RRRAcceleration.fromVector(m_unit.times(m_setpoint.a()));
-
         m_arm.set(q, qdot, qddot);
     }
 
@@ -94,7 +71,6 @@ public class MoveWithProfile extends MoveAndHold {
 
     @Override
     public double toGo() {
-        return m_arm.getConfig().euclideanDistance(m_configGoal);
+        return m_arm.getConfig().euclideanDistance(m_goal);
     }
-
 }

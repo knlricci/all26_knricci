@@ -25,6 +25,7 @@ import edu.wpi.first.math.MathUtil;
  * difference.
  */
 public class RotaryMechanism implements Player {
+    private static final boolean DEBUG = false;
     private final Motor m_motor;
     private final RotaryPositionSensor m_sensor;
     private final double m_gearRatio;
@@ -185,14 +186,16 @@ public class RotaryMechanism implements Player {
             double torqueNm) {
         m_log_desired_unwrapped_position.log(() -> unwrappedPositionRad);
         if (unwrappedPositionRad < m_minPositionRad) {
-            System.out.printf("WARNING: requested position %8.3f less than min %8.3f\n",
-                    unwrappedPositionRad, m_minPositionRad);
+            if (DEBUG)
+                System.out.printf("RotaryMechanism: requested position %8.3f less than min %8.3f\n",
+                        unwrappedPositionRad, m_minPositionRad);
             m_motor.stop();
             return;
         }
         if (unwrappedPositionRad > m_maxPositionRad) {
-            System.out.printf("WARNING: requested position %8.3f more than max %8.3f\n",
-                    unwrappedPositionRad, m_maxPositionRad);
+            if (DEBUG)
+                System.out.printf("RotaryMechanism: requested position %8.3f more than max %8.3f\n",
+                        unwrappedPositionRad, m_maxPositionRad);
             m_motor.stop();
             return;
         }
@@ -241,7 +244,7 @@ public class RotaryMechanism implements Player {
         return m_sensor.getWrappedPositionRad();
     }
 
-    /** Current measurement.  Unwrapped domain is infinite. */
+    /** Current measurement. Unwrapped domain is infinite. */
     public double getUnwrappedPositionRad() {
         return m_sensor.getUnwrappedPositionRad();
     }
