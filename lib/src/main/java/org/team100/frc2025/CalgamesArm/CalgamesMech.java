@@ -330,7 +330,7 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
         ControlSE2 control = new ControlSE2(pose, v, a);
 
         PRRConfig q = getConfig();
-        PRRVelocity jv = m_kinematics.inverse(q, control.model());
+        PRRVelocity jv = m_kinematics.inverse(q, control.state());
         PRRAcceleration ja = m_kinematics.inverse(q, control);
         PRREffort jf = m_dynamics.forward(getConfig(), jv, ja);
 
@@ -360,7 +360,7 @@ public class CalgamesMech extends SubsystemBase implements Music, PositionSubsys
         if (DEBUG) {
             System.out.printf("pose %s config %s\n", StrUtil.poseStr(pose), config);
         }
-        PRRVelocity jv = m_kinematics.inverse(config, control.model());
+        PRRVelocity jv = m_kinematics.inverse(config, control.state());
         PRRAcceleration ja = m_kinematics.inverse(config, control);
         set(config, jv, ja);
     }

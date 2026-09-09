@@ -40,10 +40,10 @@ public interface ProfileR1 {
      */
     default double simulateForETA(double dt, ControlR1 initial, StateR1 goal) {
         double t = 0;
-        StateR1 sample = initial.model();
+        StateR1 sample = initial.state();
         while (!sample.near(goal, 0.01)) {
             ControlR1 c = calculate(dt, sample.control(), goal);
-            sample = c.model();
+            sample = c.state();
             t += dt;
             if (t > MAX_ETA)
                 return Double.POSITIVE_INFINITY;
