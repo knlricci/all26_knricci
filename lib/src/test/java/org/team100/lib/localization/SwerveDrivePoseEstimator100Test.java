@@ -58,13 +58,13 @@ class SwerveDrivePoseEstimator100Test implements Timeless {
     private SwerveModulePositions positions;
 
     private static void verify(double x, double sigma, SwerveHistory history, double timestamp) {
-        SwerveState state = history.getRecord(timestamp);
-        StateSE2 model = state.state();
-        Pose2d estimate = model.pose();
+        SwerveState swerveState = history.getRecord(timestamp);
+        StateSE2 state = swerveState.state();
+        Pose2d estimate = state.pose();
         assertEquals(x, estimate.getX(), DELTA);
         assertEquals(0, estimate.getY(), DELTA);
         assertEquals(0, estimate.getRotation().getRadians(), DELTA);
-        IsotropicNoiseSE2 noise = state.noise();
+        IsotropicNoiseSE2 noise = swerveState.noise();
         assertEquals(sigma, noise.cartesian(), DELTA);
     }
 

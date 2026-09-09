@@ -185,7 +185,7 @@ public class DriveProfiledReefLock extends Command {
         }
 
         // feedback uses the current setpoint, which was set previously
-        final double thetaFB = m_thetaFeedback.calculate(state.theta(), m_thetaSetpoint.model());
+        final double thetaFB = m_thetaFeedback.calculate(state.theta(), m_thetaSetpoint.state());
 
         final double yawMeasurement = state.theta().x();
         // take the short path

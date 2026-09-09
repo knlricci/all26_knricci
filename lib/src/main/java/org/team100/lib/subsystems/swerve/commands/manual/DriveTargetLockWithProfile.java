@@ -134,7 +134,7 @@ public class DriveTargetLockWithProfile extends Command {
         StateSE2 state = m_drive.getState();
 
         // Feedback based on the current state and the previous setpoint.
-        double thetaFB = m_thetaController.calculate(state.theta(), m_thetaSetpoint.model());
+        double thetaFB = m_thetaController.calculate(state.theta(), m_thetaSetpoint.state());
         m_log_thetaFB.log(() -> thetaFB);
 
         // the goal omega should match the target's apparent motion
