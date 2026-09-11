@@ -132,6 +132,13 @@ public class RRRArmCouple12 extends SubsystemBase implements RRRArm {
     }
 
     @Override
+    public void setZero() {
+        m_q1.setUnwrappedEncoderPositionRad(0);
+        m_q2.setUnwrappedEncoderPositionRad(0);
+        m_q3.setUnwrappedEncoderPositionRad(0);
+    }
+
+    @Override
     public void set(RRRConfig q, RRRVelocity qdot, RRRAcceleration qddot) {
         if (DEBUG)
             System.out.printf("RRRArmCouple12.set(): q[%s], qdot[%s], qddot[%s]\n", q, qdot, qddot);

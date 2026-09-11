@@ -123,6 +123,13 @@ public class RRRArmIndependent extends SubsystemBase implements RRRArm {
     }
 
     @Override
+    public void setZero() {
+        m_q1.setUnwrappedEncoderPositionRad(0);
+        m_q2.setUnwrappedEncoderPositionRad(0);
+        m_q3.setUnwrappedEncoderPositionRad(0);
+    }
+
+    @Override
     public void set(RRRConfig q, RRRVelocity qdot, RRRAcceleration qddot) {
         RRREffort f = m_dynamics.effort(q, qdot, qddot);
         set(q, qdot, f);
